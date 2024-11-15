@@ -7,10 +7,16 @@ const client = new SapphireClient({
 	defaultPrefix: '!',
 	caseInsensitiveCommands: true,
 	logger: {
-		level: LogLevel.Debug
+		level: LogLevel.Debug,
 	},
-	intents: [GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
-	loadMessageCommandListeners: true
+	intents: [
+		GatewayIntentBits.DirectMessages,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildVoiceStates,
+		GatewayIntentBits.MessageContent,
+	],
+	loadMessageCommandListeners: true,
 });
 
 const main = async () => {

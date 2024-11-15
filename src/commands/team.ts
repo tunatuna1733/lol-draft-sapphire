@@ -39,7 +39,7 @@ export class UserCommand extends Command {
 	private async sendTeam(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.channel?.isSendable()) return;
 
-		const voiceChannels = (await interaction.guild?.channels.fetch())?.filter(
+		const voiceChannels = (await interaction.guild?.channels.fetch(undefined, { cache: false, force: true }))?.filter(
 			(ch) => ch?.type === ChannelType.GuildVoice,
 		);
 
