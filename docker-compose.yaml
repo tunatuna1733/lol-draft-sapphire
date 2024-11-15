@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  lol-discord:
+    container_name: MySapphireBot
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file: .env
+    volumes:
+      - ./node_modules:/home/node/node_modules
+      - ./dist:/home/node/dist
+      - ./package.json:/home/node/package.json
