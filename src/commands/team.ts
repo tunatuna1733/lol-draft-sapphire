@@ -1,6 +1,15 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationIntegrationType, ChannelType, Colors, EmbedBuilder, InteractionContextType } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ApplicationIntegrationType,
+	ChannelType,
+	Colors,
+	EmbedBuilder,
+	InteractionContextType,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+} from 'discord.js';
 import type { CreateResponse } from '../types/response';
 import type { PlayerData } from '../types/team';
 
@@ -77,7 +86,7 @@ export class UserCommand extends Command {
 			const id = resJson.id;
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Blue)
-				.setTitle(`Team room created! (ID: ${id})`)
+				.setTitle(`Team room created for ${vc.name}! (ID: ${id})`)
 				.addFields({
 					name: 'Click here↓',
 					value: `[Team Room link](https://lol.tunatuna.dev/team/${id})`,
@@ -85,6 +94,21 @@ export class UserCommand extends Command {
 				});
 
 			await interaction.reply({ embeds: [embed] });
+		} else {
+			const options: StringSelectMenuOptionBuilder[] = [];
+			for (const vc of activeVC) {
+				if (vc[1]) {
+					options.push(new StringSelectMenuOptionBuilder().setLabel(vc[1].name).setValue(vc[1].id));
+				}
+			}
+			const select = new StringSelectMenuBuilder()
+				.setCustomId('team-vc-select')
+				.setPlaceholder('Select VC')
+				.addOptions(...options);
+
+			const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([select]);
+
+			await interaction.reply({ content: 'Choose VC to create team.', components: [row] });
 		}
 	}
 }
