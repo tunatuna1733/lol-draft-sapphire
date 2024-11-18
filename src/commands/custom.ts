@@ -46,7 +46,7 @@ export class UserCommand extends Command {
 		const team1Name = interaction.options.getString('team1-name', false) || 'Team1';
 		const team2Name = interaction.options.getString('team2-name', false) || 'Team2';
 
-		const url = `https://urgot.tunatuna.dev/createRoom?matchName=${draftName}&team1Name=${team1Name}&team2Name=${team2Name}`;
+		const url = `${process.env.WS_SERVER}/createRoom?matchName=${draftName}&team1Name=${team1Name}&team2Name=${team2Name}`;
 		const res = await fetch(url);
 		const resJson = (await res.json()) as CreateResponse;
 		const id = resJson.id;
@@ -56,17 +56,17 @@ export class UserCommand extends Command {
 			.addFields(
 				{
 					name: `:blue_circle: ${team1Name}`,
-					value: `[${team1Name} link](https://lol.tunatuna.dev/draft/${id}?team=Blue)`,
+					value: `[${team1Name} link](${process.env.WEB_SERVER}/draft/${id}?team=Blue)`,
 					inline: false,
 				},
 				{
 					name: `:red_circle: ${team2Name}`,
-					value: `[${team2Name} link](https://lol.tunatuna.dev/draft/${id}?team=Red)`,
+					value: `[${team2Name} link](${process.env.WEB_SERVER}/draft/${id}?team=Red)`,
 					inline: false,
 				},
 				{
 					name: ':black_circle: Spectator',
-					value: `[Spectator link](https://lol.tunatuna.dev/draft/${id})`,
+					value: `[Spectator link](${process.env.WEB_SERVER}/draft/${id})`,
 					inline: false,
 				},
 			);
