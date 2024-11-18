@@ -73,7 +73,8 @@ export class UserCommand extends Command {
 
 		await interaction.editReply({ content: '', embeds: [embed] });
 		rooms[id] = interaction.channelId;
-
+		/*
+    // its currently bugged :(
 		setTimeout(
 			async () => {
 				const editedEmbed = new EmbedBuilder().setColor(Colors.Red).setTitle('This draft room was closed.');
@@ -81,5 +82,6 @@ export class UserCommand extends Command {
 			},
 			20 * 60 * 1000,
 		);
+    */
 	}
 }
