@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { Colors, EmbedBuilder, VoiceChannel, type StringSelectMenuInteraction } from 'discord.js';
 import type { PlayerData } from '../types/team';
-import type { CreateResponse } from '../types/response';
+import type { CreateResponse } from '../types/payload';
 
 export class MenuHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {

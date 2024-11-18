@@ -1,7 +1,8 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
 import { ApplicationIntegrationType, Colors, EmbedBuilder, InteractionContextType } from 'discord.js';
-import type { CreateResponse } from '../types/response';
+import type { CreateResponse } from '../types/payload';
+import { rooms } from '../data';
 
 @ApplyOptions<Command.Options>({
 	description: 'Create draft room',
@@ -40,6 +41,7 @@ export class UserCommand extends Command {
 
 	private async sendCustom(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.channel?.isSendable()) return;
+		await interaction.deferReply({ fetchReply: true });
 		const draftName = interaction.options.getString('draft-name', false) || '';
 		const team1Name = interaction.options.getString('team1-name', false) || 'Team1';
 		const team2Name = interaction.options.getString('team2-name', false) || 'Team2';
@@ -69,6 +71,15 @@ export class UserCommand extends Command {
 				},
 			);
 
-		await interaction.reply({ embeds: [embed] });
+		await interaction.editReply({ content: '', embeds: [embed] });
+		rooms[id] = interaction.channelId;
+
+		setTimeout(
+			async () => {
+				const editedEmbed = new EmbedBuilder().setColor(Colors.Red).setTitle('This draft room was closed.');
+				interaction.editReply({ content: '', embeds: [editedEmbed] });
+			},
+			20 * 60 * 1000,
+		);
 	}
 }

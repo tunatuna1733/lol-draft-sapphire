@@ -10,7 +10,7 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
-import type { CreateResponse } from '../types/response';
+import type { CreateResponse } from '../types/payload';
 import type { PlayerData } from '../types/team';
 
 @ApplyOptions<Command.Options>({
