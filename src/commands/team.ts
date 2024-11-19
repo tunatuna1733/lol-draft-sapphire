@@ -80,7 +80,7 @@ export class UserCommand extends Command {
 				icon: member.displayAvatarURL(),
 				lane: '',
 			}));
-			const url = 'https://urgot.tunatuna.dev/createTeam';
+			const url = `${process.env.WS_SERVER}/createTeam`;
 			const res = await fetch(url, { method: 'POST', body: JSON.stringify({ players }) });
 			const resJson = (await res.json()) as CreateResponse;
 			const id = resJson.id;
@@ -89,7 +89,7 @@ export class UserCommand extends Command {
 				.setTitle(`Team room created for ${vc.name}! (ID: ${id})`)
 				.addFields({
 					name: 'Click here↓',
-					value: `[Team Room link](https://lol.tunatuna.dev/team/${id})`,
+					value: `[Team Room link](${process.env.WEB_SERVER}/team/${id})`,
 					inline: false,
 				});
 

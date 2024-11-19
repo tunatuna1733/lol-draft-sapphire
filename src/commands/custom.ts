@@ -47,7 +47,7 @@ export class UserCommand extends Command {
 		const team2Name = interaction.options.getString('team2-name', false) || 'Team2';
 
 		const url = `${process.env.WS_SERVER}/createRoom?matchName=${draftName}&team1Name=${team1Name}&team2Name=${team2Name}`;
-		const res = await fetch(url);
+		const res = await fetch(url, { method: 'POST' });
 		const resJson = (await res.json()) as CreateResponse;
 		const id = resJson.id;
 		const embed = new EmbedBuilder()
