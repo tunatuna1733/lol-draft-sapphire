@@ -1,7 +1,7 @@
 import './lib/setup';
 
 import { LogLevel, SapphireClient } from '@sapphire/framework';
-import { AttachmentBuilder, GatewayIntentBits, type TextChannel } from 'discord.js';
+import { AttachmentBuilder, EmbedBuilder, GatewayIntentBits, type TextChannel } from 'discord.js';
 import Fastify from 'fastify';
 import type { DraftImagePayload } from './types/payload';
 import { rooms } from './data';
@@ -26,7 +26,7 @@ const app = Fastify({ bodyLimit: 12485760 });
 
 app.post('/draftImage', async (req) => {
 	const body = req.body as DraftImagePayload;
-	const channelId = rooms[body.id];
+	const channelId = body.channelId || rooms[body.id];
 	if (!channelId) {
 		return {
 			success: false,
@@ -40,8 +40,9 @@ app.post('/draftImage', async (req) => {
 	}
 	const buf = Buffer.from(body.image.split(',')[1], 'base64');
 	const file = new AttachmentBuilder(buf, { name: 'output.png' });
-	(channel as TextChannel).send({ files: [file] });
-	delete rooms[body.id];
+	const embed = new EmbedBuilder().setTitle('Pick Result').setImage('attachment://output.png');
+	(channel as TextChannel).send({ files: [file], embeds: [embed] });
+	if (!body.channelId) delete rooms[body.id];
 	return {
 		success: true,
 	};

@@ -81,7 +81,10 @@ export class UserCommand extends Command {
 				lane: '',
 			}));
 			const url = `${process.env.WS_SERVER}/createTeam`;
-			const res = await fetch(url, { method: 'POST', body: JSON.stringify({ players }) });
+			const res = await fetch(url, {
+				method: 'POST',
+				body: JSON.stringify({ players, channelId: interaction.channelId }),
+			});
 			const resJson = (await res.json()) as CreateResponse;
 			const id = resJson.id;
 			const embed = new EmbedBuilder()
