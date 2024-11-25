@@ -31,7 +31,9 @@
     "watch": "tsc -w",
     "start": "node --env-file=.env dist/index.js",
     "dev": "npm run build && npm run start",
-    "watch:start": "tsc-watch --onSuccess \"npm run start\""
+    "watch:start": "tsc-watch --onSuccess \"npm run start\"",
+    "register": "npm run build && node --env-file=.env dist/registerEmojis.js",
+    "prod": "node dist/registerEmojis.js && node dist/index.js"
   },
   "packageManager": "yarn@4.5.1"
 }

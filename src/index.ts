@@ -4,7 +4,7 @@ import { LogLevel, SapphireClient } from '@sapphire/framework';
 import { AttachmentBuilder, EmbedBuilder, GatewayIntentBits, type TextChannel } from 'discord.js';
 import Fastify from 'fastify';
 import type { DraftImagePayload } from './types/payload';
-import { rooms } from './data';
+import { initChampions, initEmojis, rooms } from './data';
 
 const client = new SapphireClient({
 	defaultPrefix: '!',
@@ -50,6 +50,8 @@ app.post('/draftImage', async (req) => {
 
 const main = async () => {
 	try {
+		await initChampions();
+		await initEmojis();
 		client.logger.info('Logging in');
 		await client.login();
 		client.logger.info('logged in');
