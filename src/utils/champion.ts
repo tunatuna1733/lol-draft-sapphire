@@ -1,9 +1,9 @@
 import { champions } from '../data';
 import type { ChampInfo, ChampsResponse } from '../types/ddragon';
+import { getLatestDDragonVersion } from './riotapi';
 
 export const getChampions = async () => {
-	const verRes = (await (await fetch('https://ddragon.leagueoflegends.com/api/versions.json')).json()) as string[];
-	const latestVer = verRes[0];
+	const latestVer = await getLatestDDragonVersion();
 	const enChampRes = (await (
 		await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestVer}/data/en_US/champion.json`)
 	).json()) as ChampsResponse;
