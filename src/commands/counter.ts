@@ -3,6 +3,7 @@ import { Command } from '@sapphire/framework';
 import { ApplicationIntegrationType, Colors, EmbedBuilder, InteractionContextType } from 'discord.js';
 import { getChampion, getChampionKey, isChampionId } from '../utils/champion';
 import { getEmoji } from '../utils/emoji';
+import { getLatestDDragonVersion } from '../utils/riotapi';
 
 type OpggResponse = {
 	data: {
@@ -31,18 +32,18 @@ type OpggResponse = {
 	meta: never;
 };
 
-type Lanes = 'TOP' | 'JUNGLE' | 'MID' | 'ADC' | 'SUPPORT';
-type Counters = {
-	lane: Lanes;
+type LolalyticsLane = 'top' | 'jungle' | 'middle' | 'bottom' | 'support';
+type LolalyticsResponse = {
 	counters: {
-		id: string;
-		jpname: string;
-		picks: number;
-		wins: number;
+		cid: number;
+		vsWr: number;
+		n: number;
 	}[];
 };
 
-const getJpLaneName = (lane: Lanes) => {
+type OpggLane = 'TOP' | 'JUNGLE' | 'MID' | 'ADC' | 'SUPPORT';
+
+const getJpLaneName = (lane: OpggLane | LolalyticsLane) => {
 	switch (lane) {
 		case 'TOP':
 			return 'トップ';
@@ -54,6 +55,31 @@ const getJpLaneName = (lane: Lanes) => {
 			return 'ボット';
 		case 'SUPPORT':
 			return 'サポート';
+		case 'top':
+			return 'トップ';
+		case 'jungle':
+			return 'ジャングル';
+		case 'middle':
+			return 'ミッド';
+		case 'bottom':
+			return 'ボット';
+		case 'support':
+			return 'サポート';
+	}
+};
+
+const convertLane = (opggLane: OpggLane): LolalyticsLane => {
+	switch (opggLane) {
+		case 'TOP':
+			return 'top';
+		case 'JUNGLE':
+			return 'jungle';
+		case 'MID':
+			return 'middle';
+		case 'ADC':
+			return 'bottom';
+		case 'SUPPORT':
+			return 'support';
 	}
 };
 
@@ -112,44 +138,85 @@ export class UserCommand extends Command {
 			await deferedInteraction.edit('Failed to get counter data');
 			return;
 		}
-		const counters: Counters[] = opggData.positions.map((pos) => ({
-			lane: pos.name as Lanes,
-			counters: pos.counters.map((counter) => {
-				const champ = getChampion(counter.champion_id.toString());
-				if (!champ)
-					return {
-						id: '',
-						jpname: '',
-						picks: 0,
-						wins: 0,
-					};
-				return {
-					id: champ.id,
-					jpname: champ.jpname,
-					picks: counter.play,
-					wins: counter.win,
-				};
-			}),
-		}));
+		const lanes = opggData.positions.map((p) => convertLane(p.name as OpggLane));
 
-		const fields = counters.flatMap((lane) => {
+		const lolalyticsChampId = championId === 'MonkeyKing' ? 'wukong' : championId.toLowerCase();
+		const version = await getLatestDDragonVersion(true);
+		const lolalyticsResult = await Promise.all(
+			lanes.map((lane) =>
+				fetch(
+					`https://a1.lolalytics.com/mega/?ep=counter&v=1&patch=${version}&c=${lolalyticsChampId}&lane=${lane}&tier=emerald_plus&queue=ranked&region=all`,
+				).then((r) =>
+					r.json().then((j) => ({
+						lane,
+						res: j as LolalyticsResponse,
+						total: (j as LolalyticsResponse).counters.reduce((prev, c) => prev + c.n, 0),
+					})),
+				),
+			),
+		);
+
+		const counterFields = lolalyticsResult.flatMap((data) => {
 			const titleField = {
 				name: '\u200b',
-				value: `**${getJpLaneName(lane.lane)}**`,
+				value: `**${getJpLaneName(data.lane)}**`,
 				inline: false,
 			};
-			const counterFields = lane.counters.map((c) => ({
-				name: `${getEmoji(c.id)} ${c.jpname}`,
-				value: `勝率: ${Math.round((c.wins / c.picks) * 1000) / 10} (ピック数: ${c.picks})`,
-				inline: true,
-			}));
-			return [titleField, ...counterFields];
+			const champFields = data.res.counters
+				.toSorted((a, b) => {
+					if (a.vsWr > b.vsWr) return -1;
+					if (a.vsWr < b.vsWr) return 1;
+					return 0;
+				})
+				.filter((c) => (c.n / data.total) * 100 > 0.5)
+				.slice(0, 6)
+				.map((c) => {
+					const champ = getChampion(c.cid.toString());
+					return {
+						name: `${getEmoji(champ?.id)} ${champ?.jpname}`,
+						value: `勝率: ${c.vsWr} (マッチ数: ${c.n})`,
+						inline: true,
+					};
+				});
+			return [titleField, ...champFields];
 		});
 
-		const embed = new EmbedBuilder().setColor(Colors.Blurple).setTitle(`${champ?.jpname} カウンター`).addFields(fields);
+		const advantageFields = lolalyticsResult.flatMap((data) => {
+			const titleField = {
+				name: '\u200b',
+				value: `**${getJpLaneName(data.lane)}**`,
+				inline: false,
+			};
+			const champFields = data.res.counters
+				.toSorted((a, b) => {
+					if (a.vsWr < b.vsWr) return -1;
+					if (a.vsWr > b.vsWr) return 1;
+					return 0;
+				})
+				.filter((c) => (c.n / data.total) * 100 > 0.5)
+				.slice(0, 6)
+				.map((c) => {
+					const champ = getChampion(c.cid.toString());
+					return {
+						name: `${getEmoji(champ?.id)} ${champ?.jpname}`,
+						value: `勝率: ${c.vsWr} (マッチ数: ${c.n})`,
+						inline: true,
+					};
+				});
+			return [titleField, ...champFields];
+		});
 
-		if (champ?.img) embed.setThumbnail(champ.img);
+		const counterEmbed = new EmbedBuilder()
+			.setColor(Colors.Red)
+			.setTitle(`${champ?.jpname} Strong against...`)
+			.addFields(counterFields);
+		if (champ?.img) counterEmbed.setThumbnail(champ.img);
 
-		await deferedInteraction.edit({ content: '', embeds: [embed] });
+		const advantageEmbed = new EmbedBuilder()
+			.setColor(Colors.Blurple)
+			.setTitle(`${champ?.jpname} Weak against...`)
+			.addFields(advantageFields);
+
+		await deferedInteraction.edit({ content: '', embeds: [counterEmbed, advantageEmbed] });
 	}
 }

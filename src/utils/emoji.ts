@@ -21,7 +21,8 @@ export const getAllEmojis = async () => {
 	return emojiRes.items;
 };
 
-export const getEmoji = (id: string) => {
+export const getEmoji = (id?: string) => {
+	if (!id) return '';
 	const emoji = emojis.find((e) => e.name === id);
 	if (!emoji) return '';
 	return `<:${emoji.name}:${emoji.id}>`;

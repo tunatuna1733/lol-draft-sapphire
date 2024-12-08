@@ -38,10 +38,14 @@ export const getIds = async (puuid: string) => {
 	return json;
 };
 
-export const getLatestDDragonVersion = async () => {
+export const getLatestDDragonVersion = async (short = false) => {
 	const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-	if (!res.ok) return '14.23.1'; // placeholder
+	if (!res.ok) return short ? '14.23' : '14.23.1'; // placeholder
 	const json = (await res.json()) as string[];
+	if (short) {
+		const s = json[0].split('.');
+		return `${s[0]}.${s[1]}`;
+	}
 	return json[0];
 };
 
