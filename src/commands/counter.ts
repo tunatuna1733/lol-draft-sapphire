@@ -163,7 +163,7 @@ export class UserCommand extends Command {
 				inline: false,
 			};
 			const champFields = data.res.counters
-				.toSorted((a, b) => {
+				.sort((a, b) => {
 					if (a.vsWr > b.vsWr) return -1;
 					if (a.vsWr < b.vsWr) return 1;
 					return 0;
@@ -188,7 +188,7 @@ export class UserCommand extends Command {
 				inline: false,
 			};
 			const champFields = data.res.counters
-				.toSorted((a, b) => {
+				.sort((a, b) => {
 					if (a.vsWr < b.vsWr) return -1;
 					if (a.vsWr > b.vsWr) return 1;
 					return 0;
