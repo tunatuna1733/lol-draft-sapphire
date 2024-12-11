@@ -3,7 +3,7 @@ import { Command } from '@sapphire/framework';
 import { ApplicationIntegrationType, Colors, EmbedBuilder, InteractionContextType } from 'discord.js';
 import { getChampion, getChampionKey, isChampionId } from '../utils/champion';
 import { getEmoji } from '../utils/emoji';
-import { getLatestDDragonVersion } from '../utils/riotapi';
+import { getTwoLatestVersions } from '../utils/riotapi';
 
 type OpggResponse = {
 	data: {
@@ -141,28 +141,49 @@ export class UserCommand extends Command {
 		const lanes = opggData.positions.map((p) => convertLane(p.name as OpggLane));
 
 		const lolalyticsChampId = championId === 'MonkeyKing' ? 'wukong' : championId.toLowerCase();
-		const version = await getLatestDDragonVersion(true);
+		const versions = await getTwoLatestVersions(true);
+		const fetches: [LolalyticsLane, string][] = [];
+		for (const lane of lanes) {
+			for (const version of versions) {
+				fetches.push([lane, version]);
+			}
+		}
 		const lolalyticsResult = await Promise.all(
-			lanes.map((lane) =>
+			fetches.map((info) =>
 				fetch(
-					`https://a1.lolalytics.com/mega/?ep=counter&v=1&patch=${version}&c=${lolalyticsChampId}&lane=${lane}&tier=emerald_plus&queue=ranked&region=all`,
+					`https://a1.lolalytics.com/mega/?ep=counter&v=1&patch=${info[1]}&c=${lolalyticsChampId}&lane=${info[0]}&tier=emerald_plus&queue=ranked&region=all`,
 				).then((r) =>
 					r.json().then((j) => ({
-						lane,
+						lane: info[0],
 						res: j as LolalyticsResponse,
 						total: (j as LolalyticsResponse).counters.reduce((prev, c) => prev + c.n, 0),
+						version: info[1],
 					})),
 				),
 			),
 		);
 
-		const counterFields = lolalyticsResult.flatMap((data) => {
+		const counterInfo: (LolalyticsResponse & { lane: LolalyticsLane; total: number; version: string })[] = [];
+		for (const res of lolalyticsResult) {
+			if (res.res.counters.length === 0) continue;
+			const lane = res.lane;
+			if (!counterInfo.find((i) => i.lane === lane)) {
+				counterInfo.push({
+					lane,
+					counters: res.res.counters,
+					total: res.total,
+					version: res.version,
+				});
+			}
+		}
+
+		const counterFields = counterInfo.flatMap((data) => {
 			const titleField = {
 				name: '\u200b',
 				value: `**${getJpLaneName(data.lane)}**`,
 				inline: false,
 			};
-			const champFields = data.res.counters
+			const champFields = data.counters
 				.sort((a, b) => {
 					if (a.vsWr > b.vsWr) return -1;
 					if (a.vsWr < b.vsWr) return 1;
@@ -181,13 +202,13 @@ export class UserCommand extends Command {
 			return [titleField, ...champFields];
 		});
 
-		const advantageFields = lolalyticsResult.flatMap((data) => {
+		const advantageFields = counterInfo.flatMap((data) => {
 			const titleField = {
 				name: '\u200b',
 				value: `**${getJpLaneName(data.lane)}**`,
 				inline: false,
 			};
-			const champFields = data.res.counters
+			const champFields = data.counters
 				.sort((a, b) => {
 					if (a.vsWr < b.vsWr) return -1;
 					if (a.vsWr > b.vsWr) return 1;
@@ -215,6 +236,7 @@ export class UserCommand extends Command {
 		const advantageEmbed = new EmbedBuilder()
 			.setColor(Colors.Blurple)
 			.setTitle(`${champ?.jpname} Weak against...`)
+			.setFooter({ text: `Patch: ${counterInfo[0].version}` })
 			.addFields(advantageFields);
 
 		await deferedInteraction.edit({ content: '', embeds: [counterEmbed, advantageEmbed] });

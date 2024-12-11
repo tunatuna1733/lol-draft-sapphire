@@ -40,13 +40,25 @@ export const getIds = async (puuid: string) => {
 
 export const getLatestDDragonVersion = async (short = false) => {
 	const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-	if (!res.ok) return short ? '14.23' : '14.23.1'; // placeholder
+	if (!res.ok) return short ? '14.24' : '14.24.1'; // placeholder
 	const json = (await res.json()) as string[];
 	if (short) {
 		const s = json[0].split('.');
 		return `${s[0]}.${s[1]}`;
 	}
 	return json[0];
+};
+
+export const getTwoLatestVersions = async (short = false) => {
+	const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+	if (!res.ok) return short ? ['14.23', '14.24'] : ['14.23.1', '14.24.1']; // placeholder
+	const json = (await res.json()) as string[];
+	if (short) {
+		const s = json[0].split('.');
+		const s2 = json[1].split('.');
+		return [`${s[0]}.${s[1]}`, `${s2[0]}.${s2[1]}`];
+	}
+	return [json[0], json[1]];
 };
 
 export const getSpecData = async (puuid: string) => {
