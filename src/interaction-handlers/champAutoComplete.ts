@@ -16,7 +16,7 @@ export class AutocompleteHandler extends InteractionHandler {
 
 	public override async parse(interaction: AutocompleteInteraction) {
 		// Only run this interaction for the command with ID '1000802763292020737'
-		if (interaction.commandName !== 'counter') return this.none();
+		if (interaction.commandName !== 'counter' && interaction.commandName !== 'emoji') return this.none();
 
 		// Get the focussed (current) option
 		const focusedOption = interaction.options.getFocused(true);
