@@ -63,6 +63,25 @@ const registerRuneEmojis = async (appId: string, token: string) => {
 	console.log('Successfully registered rune emojis.');
 };
 
+const registerLaneEmojis = async (appId: string, token: string) => {
+	const positions = ['Top', 'Jungle', 'Middle', 'Bottom', 'Support'] as const;
+	for (const position of positions) {
+		const positionName = position === 'Support' ? 'utility' : position.toLowerCase();
+		const url = `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-${positionName}.png`;
+		const buf = await (await fetch(url)).arrayBuffer();
+		const data = `data:image/png;base64,${Buffer.from(buf).toString('base64')}`;
+		await fetch(`https://discord.com/api/v10/applications/${appId}/emojis`, {
+			method: 'POST',
+			body: JSON.stringify({ name: position, image: data }),
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bot ${token}`,
+			},
+		});
+	}
+	console.log('Successfully registered lane emojis.');
+};
+
 const removeAllRegisteredEmojis = async (appId: string, token: string) => {
 	const emojiRes = (await (
 		await fetch(`https://discord.com/api/v10/applications/${appId}/emojis`, {
@@ -98,6 +117,7 @@ const main = async () => {
 	await registerSummonerSpellEmojis(appId, token);
 	await registerRuneEmojis(appId, token);
 	await registerChampionEmojis(appId, token);
+	await registerLaneEmojis(appId, token);
 };
 
 main();
