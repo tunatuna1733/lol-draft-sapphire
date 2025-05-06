@@ -6,4 +6,5 @@ export type DraftImagePayload = {
 	id: string;
 	image: string;
 	channelId?: string;
+	fearlessId: string;
 };
