@@ -50,31 +50,33 @@ export class UserCommand extends Command {
 	private async sendTeam(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.channel?.isSendable()) return;
 
+		await interaction.deferReply({ withResponse: true });
+
 		const voiceChannels = (await interaction.guild?.channels.fetch(undefined, { cache: false, force: true }))?.filter(
 			(ch) => ch?.type === ChannelType.GuildVoice,
 		);
 
 		if (!voiceChannels) {
-			await interaction.reply('Something went wrong while fetchin vc.');
+			await interaction.editReply('Something went wrong while fetchin vc.');
 			return;
 		}
 
 		if (voiceChannels.size === 0) {
-			await interaction.reply('No VC found.');
+			await interaction.editReply('No VC found.');
 			return;
 		}
 
 		const activeVC = voiceChannels.filter((vc) => vc && vc.members.size > 0);
 
 		if (activeVC.size === 0) {
-			await interaction.reply('No active VC found.');
+			await interaction.editReply('No active VC found.');
 			return;
 		}
 
 		if (activeVC.size === 1) {
 			const vc = activeVC.at(0);
 			if (!vc) {
-				await interaction.reply('Failed to collect vc info.');
+				await interaction.editReply('Failed to collect vc info.');
 				return;
 			}
 			const players: PlayerData[] = [];
@@ -88,8 +90,13 @@ export class UserCommand extends Command {
 					name: member[1].displayName,
 					icon: member[1].displayAvatarURL(),
 					lane: '',
-          level: ids?.summonerLevel || 0,
-          elo: calcElo(stats?.SOLO?.points || 0, stats?.FLEX?.points || 0, ids?.summonerLevel || 0, stats?.SOLO?.winRate || 0),
+					level: ids?.summonerLevel || 0,
+					elo: calcElo(
+						stats?.SOLO?.points || 0,
+						stats?.FLEX?.points || 0,
+						ids?.summonerLevel || 0,
+						stats?.SOLO?.winRate || 0,
+					),
 					SOLO: stats?.SOLO,
 					FLEX: stats?.FLEX,
 				});
@@ -111,7 +118,7 @@ export class UserCommand extends Command {
 					inline: false,
 				});
 
-			await interaction.reply({ embeds: [embed] });
+			await interaction.editReply({ embeds: [embed] });
 		} else {
 			const options: StringSelectMenuOptionBuilder[] = [];
 			for (const vc of activeVC) {
@@ -126,7 +133,7 @@ export class UserCommand extends Command {
 
 			const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([select]);
 
-			await interaction.reply({ content: 'Choose VC to create team.', components: [row] });
+			await interaction.editReply({ content: 'Choose VC to create team.', components: [row] });
 		}
 	}
 }

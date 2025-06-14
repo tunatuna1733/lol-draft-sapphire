@@ -20,10 +20,11 @@ export class MenuHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: StringSelectMenuInteraction) {
+		await interaction.deferReply({ withResponse: true });
 		const value = interaction.values[0];
 		const vc = await interaction.guild?.channels.fetch(value);
 		if (!vc || !(vc instanceof VoiceChannel)) {
-			interaction.reply('Failed to get vc');
+			interaction.editReply('Failed to get vc');
 			return;
 		}
 
@@ -38,8 +39,13 @@ export class MenuHandler extends InteractionHandler {
 				name: member[1].displayName,
 				icon: member[1].displayAvatarURL(),
 				lane: '',
-        level: ids?.summonerLevel || 0,
-        elo: calcElo(stats?.SOLO?.points || 0, stats?.FLEX?.points || 0, ids?.summonerLevel || 0, stats?.SOLO?.winRate || 0),
+				level: ids?.summonerLevel || 0,
+				elo: calcElo(
+					stats?.SOLO?.points || 0,
+					stats?.FLEX?.points || 0,
+					ids?.summonerLevel || 0,
+					stats?.SOLO?.winRate || 0,
+				),
 				SOLO: stats?.SOLO,
 				FLEX: stats?.FLEX,
 			});
@@ -60,6 +66,6 @@ export class MenuHandler extends InteractionHandler {
 				inline: false,
 			});
 
-		await interaction.reply({ embeds: [embed] });
+		await interaction.editReply({ embeds: [embed] });
 	}
 }
