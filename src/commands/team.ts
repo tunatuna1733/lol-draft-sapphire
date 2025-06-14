@@ -10,8 +10,10 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
+import { db } from '..';
 import type { CreateResponse } from '../types/payload';
 import type { PlayerData } from '../types/team';
+import { calcElo, getIds, getPlayerStats } from '../utils/riotapi';
 
 @ApplyOptions<Command.Options>({
 	description: 'Create draft room',
@@ -75,11 +77,24 @@ export class UserCommand extends Command {
 				await interaction.reply('Failed to collect vc info.');
 				return;
 			}
-			const players: PlayerData[] = vc.members.map((member) => ({
-				name: member.displayName,
-				icon: member.displayAvatarURL(),
-				lane: '',
-			}));
+			const players: PlayerData[] = [];
+			for (const member of vc.members) {
+				const puuid = (await db.findUserByDiscordId(member[1].id))?.puuid;
+				if (!puuid) continue;
+				const stats = await getPlayerStats(puuid);
+				const ids = await getIds(puuid);
+				players.push({
+					id: member[1].id,
+					name: member[1].displayName,
+					icon: member[1].displayAvatarURL(),
+					lane: '',
+          level: ids?.summonerLevel || 0,
+          elo: calcElo(stats?.SOLO?.points || 0, stats?.FLEX?.points || 0, ids?.summonerLevel || 0, stats?.SOLO?.winRate || 0),
+					SOLO: stats?.SOLO,
+					FLEX: stats?.FLEX,
+				});
+			}
+
 			const url = `${process.env.WS_SERVER}/createTeam`;
 			const res = await fetch(url, {
 				method: 'POST',

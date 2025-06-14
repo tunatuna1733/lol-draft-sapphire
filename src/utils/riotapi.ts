@@ -1,4 +1,4 @@
-import type { SpectatorResponse } from '../types/riotapi';
+import type { PlayerStats, RankedDivision, RankedTier, SpectatorResponse, StatsResponse } from '../types/riotapi';
 
 const API_KEY = process.env.RIOT_API_KEY;
 if (!API_KEY) {
@@ -68,4 +68,102 @@ export const getSpecData = async (puuid: string) => {
 	if (!res.ok || res.status === 404) return;
 	const json = (await res.json()) as SpectatorResponse;
 	return json;
+};
+
+export const getPlayerStats = async (puuid: string) => {
+	const res = await fetch(`https://jp1.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`, {
+		headers,
+	});
+	if (!res.ok || res.status === 404) return;
+	const json = (await res.json()) as StatsResponse[];
+	const data: PlayerStats = {};
+	for (const entry of json) {
+		if (entry.queueType === 'RANKED_SOLO_5x5') {
+			data.SOLO = {
+				tier: entry.tier,
+				rank: entry.rank,
+				leaguePoints: entry.leaguePoints,
+				points: calcRankedPoints(entry.tier, entry.rank, entry.leaguePoints),
+				winRate: entry.wins / (entry.wins + entry.losses),
+			};
+		} else if (entry.queueType === 'RANKED_FLEX_SR') {
+			data.FLEX = {
+				tier: entry.tier,
+				rank: entry.rank,
+				leaguePoints: entry.leaguePoints,
+				points: calcRankedPoints(entry.tier, entry.rank, entry.leaguePoints),
+				winRate: entry.wins / (entry.wins + entry.losses),
+			};
+		}
+	}
+	return data;
+};
+
+const calcRankedPoints = (tier: RankedTier, div: RankedDivision, points: number) => {
+	let elo = 0;
+	switch (tier) {
+		case 'BRONZE':
+			elo += 400;
+			break;
+		case 'SILVER':
+			elo += 800;
+			break;
+		case 'GOLD':
+			elo += 1200;
+			break;
+		case 'PLATINUM':
+			elo += 1600;
+			break;
+		case 'EMERALD':
+			elo += 2000;
+			break;
+		case 'DIAMOND':
+			elo += 2400;
+			break;
+		case 'MASTER':
+			elo += 2800;
+			break;
+		case 'GRANDMASTER':
+			elo += 3200;
+			break;
+		case 'CHALLENGER':
+			elo += 3600;
+			break;
+		default:
+			break;
+	}
+	switch (div) {
+		case 'I':
+			elo += 300;
+			break;
+		case 'II':
+			elo += 200;
+			break;
+		case 'III':
+			elo += 100;
+			break;
+		case 'IV':
+			elo += 0;
+			break;
+		default:
+			break;
+	}
+	elo += points;
+	return elo;
+};
+
+export const getAllPlayersStats = async (puuids: string[]) => {
+	const results = [];
+	for (const puuid of puuids) {
+		const res = await getPlayerStats(puuid);
+		if (!res) continue;
+		results.push(res);
+	}
+	return results;
+};
+
+export const calcElo = (soloPoints: number, flexPoints: number, level: number, soloWinrate: number) => {
+	const elo =
+		level * 2 + soloPoints * (soloWinrate > 0.5 ? 1.2 : 1.1) + (flexPoints === 0 ? soloPoints * 0.5 : flexPoints * 0.8);
+	return elo;
 };

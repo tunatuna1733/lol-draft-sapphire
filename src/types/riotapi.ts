@@ -25,3 +25,43 @@ export type SpectatorResponse = {
 		riotId: string;
 	}[];
 };
+
+export type RankedTier =
+	| 'CHALLENGER'
+	| 'GRANDMASTER'
+	| 'MASTER'
+	| 'DIAMOND'
+	| 'EMERALD'
+	| 'PLATINUM'
+	| 'GOLD'
+	| 'SILVER'
+	| 'BRONZE'
+	| 'IRON';
+
+export type RankedDivision = 'I' | 'II' | 'III' | 'IV';
+
+export type StatsResponse = {
+	queueType: 'RANKED_SOLO_5x5' | 'RANKED_FLEX_SR';
+	tier: RankedTier;
+	rank: RankedDivision;
+	leaguePoints: number;
+	wins: number;
+	losses: number;
+};
+
+export type PlayerStats = {
+	SOLO?: {
+		tier: RankedTier;
+		rank: RankedDivision;
+		leaguePoints: number;
+		points: number;
+		winRate: number;
+	};
+	FLEX?: {
+		tier: RankedTier;
+		rank: RankedDivision;
+		leaguePoints: number;
+		points: number;
+		winRate: number;
+	};
+};
