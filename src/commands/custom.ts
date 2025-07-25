@@ -1,8 +1,8 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
 import { ApplicationIntegrationType, Colors, EmbedBuilder, InteractionContextType } from 'discord.js';
-import type { CreateResponse } from '../types/payload';
 import { rooms } from '../data';
+import type { CreateResponse } from '../types/payload';
 
 @ApplyOptions<Command.Options>({
 	description: 'Create draft room',
@@ -30,7 +30,10 @@ export class UserCommand extends Command {
 				.setContexts(contexts)
 				.addStringOption((option) => option.setName('draft-name').setDescription('Draft name').setRequired(false))
 				.addStringOption((option) => option.setName('team1-name').setDescription('Team1 name').setRequired(false))
-				.addStringOption((option) => option.setName('team2-name').setDescription('Team2 name').setRequired(false)),
+				.addStringOption((option) => option.setName('team2-name').setDescription('Team2 name').setRequired(false))
+				.addBooleanOption((option) =>
+					option.setName('no-pause').setDescription('Disable pause feature').setRequired(false),
+				),
 		);
 	}
 
@@ -45,8 +48,9 @@ export class UserCommand extends Command {
 		const draftName = interaction.options.getString('draft-name', false) || '';
 		const team1Name = interaction.options.getString('team1-name', false) || 'Team1';
 		const team2Name = interaction.options.getString('team2-name', false) || 'Team2';
+		const noPause = interaction.options.getBoolean('no-pause', false) || false;
 
-		const url = `${process.env.WS_SERVER}/createRoom?matchName=${draftName}&team1Name=${team1Name}&team2Name=${team2Name}`;
+		const url = `${process.env.WS_SERVER}/createRoom?matchName=${draftName}&team1Name=${team1Name}&team2Name=${team2Name}&noPause=${noPause}`;
 		const res = await fetch(url, { method: 'POST' });
 		const resJson = (await res.json()) as CreateResponse;
 		const id = resJson.id;
