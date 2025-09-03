@@ -82,6 +82,25 @@ const registerLaneEmojis = async (appId: string, token: string) => {
 	console.log('Successfully registered lane emojis.');
 };
 
+const registerItemEmojis = async (appId: string, token: string) => {
+	const latestVer = await getLatestDDragonVersion();
+	const itemIDsResponse = await fetch(`${process.env.WS_SERVER}/itemIDs`);
+	const itemIDs = (await itemIDsResponse.json()) as string[];
+	for (const itemID of itemIDs) {
+		const url = `https://ddragon.leagueoflegends.com/cdn/${latestVer}/img/item/${itemID}.png`;
+		const buf = await (await fetch(url)).arrayBuffer();
+		const data = `data:image/png;base64,${Buffer.from(buf).toString('base64')}`;
+		await fetch(`https://discord.com/api/v10/applications/${appId}/emojis`, {
+			method: 'POST',
+			body: JSON.stringify({ name: `Item_${itemID}`, image: data }),
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bot ${token}`,
+			},
+		});
+	}
+};
+
 const removeAllRegisteredEmojis = async (appId: string, token: string) => {
 	const emojiRes = (await (
 		await fetch(`https://discord.com/api/v10/applications/${appId}/emojis`, {
@@ -118,6 +137,7 @@ const main = async () => {
 	await registerRuneEmojis(appId, token);
 	await registerChampionEmojis(appId, token);
 	await registerLaneEmojis(appId, token);
+	await registerItemEmojis(appId, token);
 };
 
 main();
