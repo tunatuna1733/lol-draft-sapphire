@@ -99,6 +99,7 @@ const registerItemEmojis = async (appId: string, token: string) => {
 			},
 		});
 	}
+	console.log('Successfully registered item emojis.');
 };
 
 const removeAllRegisteredEmojis = async (appId: string, token: string) => {
