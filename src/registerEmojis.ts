@@ -138,7 +138,7 @@ const main = async () => {
 	await registerRuneEmojis(appId, token);
 	await registerChampionEmojis(appId, token);
 	await registerLaneEmojis(appId, token);
-	await registerItemEmojis(appId, token);
+	// await registerItemEmojis(appId, token);
 };
 
 main();

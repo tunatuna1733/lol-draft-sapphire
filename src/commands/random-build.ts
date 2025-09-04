@@ -12,6 +12,7 @@ type Item = {
 
 @ApplyOptions<Command.Options>({
 	description: 'Random build',
+	enabled: false,
 })
 export class UserCommand extends Command {
 	// Register Chat Input and Context Menu command
