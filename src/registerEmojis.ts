@@ -82,6 +82,7 @@ const registerLaneEmojis = async (appId: string, token: string) => {
 	console.log('Successfully registered lane emojis.');
 };
 
+/*
 const registerItemEmojis = async (appId: string, token: string) => {
 	const latestVer = await getLatestDDragonVersion();
 	const itemIDsResponse = await fetch(`${process.env.WS_SERVER}/itemIDs`);
@@ -101,6 +102,7 @@ const registerItemEmojis = async (appId: string, token: string) => {
 	}
 	console.log('Successfully registered item emojis.');
 };
+*/
 
 const removeAllRegisteredEmojis = async (appId: string, token: string) => {
 	const emojiRes = (await (
