@@ -3,7 +3,7 @@ import './lib/setup';
 import { LogLevel, SapphireClient } from '@sapphire/framework';
 import { AttachmentBuilder, EmbedBuilder, GatewayIntentBits, type TextChannel } from 'discord.js';
 import Fastify from 'fastify';
-import { initChampions, initEmojis, initRunes, rooms } from './data';
+import { initChampions, initEmojis, initEmotes, initRunes, rooms } from './data';
 import type { DraftImagePayload } from './types/payload';
 import { MondoDBClient } from './utils/db';
 
@@ -56,9 +56,10 @@ app.post('/draftImage', async (req) => {
 
 const main = async () => {
 	try {
-		await initChampions();
+		const champions = await initChampions();
 		await initRunes();
 		await initEmojis();
+		await initEmotes(champions);
 		await db.init();
 		client.logger.info('Logging in');
 		await client.login();

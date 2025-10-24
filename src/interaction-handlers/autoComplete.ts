@@ -15,8 +15,7 @@ export class AutocompleteHandler extends InteractionHandler {
 	}
 
 	public override async parse(interaction: AutocompleteInteraction) {
-		// Only run this interaction for the command with ID '1000802763292020737'
-		if (interaction.commandName !== 'counter' && interaction.commandName !== 'emoji') return this.none();
+		if (interaction.commandName !== 'emoji' && interaction.commandName !== 'emote') return this.none();
 
 		// Get the focussed (current) option
 		const focusedOption = interaction.options.getFocused(true);
@@ -35,6 +34,11 @@ export class AutocompleteHandler extends InteractionHandler {
 
 				// Map the search results to the structure required for Autocomplete
 				return this.some(searchResult.map((match) => ({ name: match.jpname, value: match.id })));
+			}
+			case 'emote': {
+				const _options = {};
+
+				return this.none();
 			}
 			default:
 				return this.none();
