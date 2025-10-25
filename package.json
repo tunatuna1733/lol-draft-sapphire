@@ -1,10 +1,9 @@
 {
   "name": "lol-draft-discordbot",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "author": "@sapphire",
-  "license": "UNLICENSE",
-  "type": "commonjs",
+  "module": "src/index.ts",
+  "author": "tunatuna1733",
+  "type": "module",
   "dependencies": {
     "@sapphire/decorators": "^6.1.1",
     "@sapphire/discord.js-utilities": "7.3.3",
@@ -30,13 +29,8 @@
   "scripts": {
     "sapphire": "sapphire",
     "generate": "sapphire generate",
-    "build": "tsc",
-    "watch": "tsc -w",
-    "start": "node --env-file=.env dist/index.js",
-    "dev": "npm run build && npm run start",
-    "watch:start": "tsc-watch --onSuccess \"npm run start\"",
-    "register": "npm run build && node --env-file=.env dist/registerEmojis.js",
-    "prod": "node dist/registerEmojis.js && node dist/index.js"
-  },
-  "packageManager": "yarn@4.5.1"
+    "dev": "bun run src/index.ts",
+    "register": "bun run src/registerEmojis.ts",
+    "prod": "bun run src/registerEmojis.ts && bun run src/index.ts"
+  }
 }

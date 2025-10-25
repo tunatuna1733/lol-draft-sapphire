@@ -5,9 +5,10 @@
         "@sapphire/ts-config/decorators"
     ],
     "compilerOptions": {
-        "rootDir": "src",
-        "outDir": "dist",
-        "tsBuildInfoFile": "dist/.tsbuildinfo"
+        "rootDir": "./src",
+        "noEmit": true,
+        "moduleResolution": "bundler",
+        "module": "esnext"
     },
     "include": [
         "src"

@@ -1,6 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import type { AutocompleteInteraction } from 'discord.js';
-import { champions } from '../data';
+import Fuse from 'fuse.js';
+import { champions, emotes } from '../data';
 
 export class AutocompleteHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -36,9 +37,16 @@ export class AutocompleteHandler extends InteractionHandler {
 				return this.some(searchResult.map((match) => ({ name: match.jpname, value: match.id })));
 			}
 			case 'emote': {
-				const _options = {};
+				const options = {
+					keys: ['taggedChampions', 'name', 'description'],
+					threshold: 0.3,
+				};
 
-				return this.none();
+				const fuse = new Fuse(emotes, options);
+
+				const result = fuse.search(focusedOption.value).slice(0, 20);
+
+				return this.some(result.map((match) => ({ name: match.item.name, value: match.item.name })));
 			}
 			default:
 				return this.none();

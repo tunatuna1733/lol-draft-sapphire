@@ -8,7 +8,8 @@ export const getAllEmotes = async (champions: ChampInfo[]) => {
 	);
 	const emoteResponse = (await res.json()) as EmoteResponse;
 	const emotes = emoteResponse.map((emote) => {
-		const url = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/${emote.inventoryIcon.replace('/lol-game-data/assets/', '')}`;
+		const url =
+			`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/${emote.inventoryIcon.replace('/lol-game-data/assets/', '')}`.toLowerCase();
 		const champs = emote.taggedChampionsIds.map((id) => {
 			const champ = champions.find((c) => Number(c.key) === id);
 			return champ ? champ.id : null;
