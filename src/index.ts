@@ -43,10 +43,13 @@ app.post('/draftImage', async (req) => {
 	}
 	const buf = Buffer.from(body.image.split(',')[1], 'base64');
 	const file = new AttachmentBuilder(buf, { name: 'output.png' });
-	const embed = new EmbedBuilder().setTitle('Pick Result').setImage('attachment://output.png').addFields({
-		name: 'Fearless code',
-		value: body.fearlessId,
-	});
+	const embed = new EmbedBuilder()
+		.setTitle('Pick Result')
+		.setImage('attachment://output.png')
+		.addFields({
+			name: 'Fearless code',
+			value: body.fearlessId || 'None',
+		});
 	(channel as TextChannel).send({ files: [file], embeds: [embed] });
 	if (!body.channelId) delete rooms[body.id];
 	return {
