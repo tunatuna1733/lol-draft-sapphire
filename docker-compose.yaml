@@ -1,0 +1,9 @@
+version: '3'
+services:
+  bot:
+    container_name: lol-draft-discordbot
+    build: .
+    ports:
+      - "1200:1200"
+    volumes:
+      - ./:/app

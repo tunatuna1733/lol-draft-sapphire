@@ -67,7 +67,7 @@ const main = async () => {
 		client.logger.info('Logging in');
 		await client.login();
 		client.logger.info('logged in');
-		await app.listen({ port: 8080, host: '0.0.0.0' });
+		await app.listen({ port: 1200, host: '0.0.0.0' });
 	} catch (error) {
 		client.logger.fatal(error);
 		await client.destroy();
