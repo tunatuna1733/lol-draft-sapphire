@@ -7,6 +7,7 @@ import {
 	Colors,
 	EmbedBuilder,
 	InteractionContextType,
+	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from 'discord.js';
@@ -38,7 +39,8 @@ export class UserCommand extends Command {
 				.setName(this.name)
 				.setDescription(this.description)
 				.setIntegrationTypes(integrationTypes)
-				.setContexts(contexts),
+				.setContexts(contexts)
+				.addBooleanOption((option) => option.setName('ephemeral').setRequired(false)),
 		);
 	}
 
@@ -50,7 +52,13 @@ export class UserCommand extends Command {
 	private async sendTeam(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.channel?.isSendable()) return;
 
-		await interaction.deferReply({ withResponse: true });
+		const ephemeral = interaction.options.getBoolean('ephemeral') ?? false;
+
+		if (ephemeral) {
+			await interaction.deferReply({ withResponse: true, flags: MessageFlags.Ephemeral });
+		} else {
+			await interaction.deferReply({ withResponse: true });
+		}
 
 		const voiceChannels = (await interaction.guild?.channels.fetch(undefined, { cache: false, force: true }))?.filter(
 			(ch) => ch?.type === ChannelType.GuildVoice,
