@@ -52,7 +52,7 @@ export class UserCommand extends Command {
 	private async sendTeam(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.channel?.isSendable()) return;
 
-		const ephemeral = interaction.options.getBoolean('ephemeral') ?? false;
+		const ephemeral = interaction.options.getBoolean('ephemeral', false) || false;
 
 		if (ephemeral) {
 			await interaction.deferReply({ withResponse: true, flags: MessageFlags.Ephemeral });
